@@ -1,21 +1,23 @@
 {
   "name": "homebridge-philips-tv-ambilight-extended",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Enhanced Homebridge plugin for Philips Android TV with proper TV icon, Ambilight control, and extended features",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
-    "homebridge",
     "homebridge-plugin",
+    "homebridge",
     "philips",
     "android-tv",
     "ambilight",
     "television",
     "tv",
     "smart-tv",
-    "homekit"
+    "homekit",
+    "philips-tv",
+    "jointspace"
   ],
   "author": "Mert Mutlu",
   "license": "ISC",
@@ -34,5 +36,15 @@
   "dependencies": {
     "request": "^2.88.2",
     "wake_on_lan": "^1.0.0"
-  }
+  },
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/m2ert"
+  },
+  "files": [
+    "index.js",
+    "PhilipsTV.js",
+    "README.md",
+    "config.sample.json"
+  ]
 }
