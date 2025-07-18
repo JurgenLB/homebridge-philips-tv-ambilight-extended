@@ -29,7 +29,7 @@ class PhilipsTvAccessory {
       this.log.error("API parameter is missing!");
       return;
     }
-    
+
     this.api = api;
 
     // Homebridge hazır olduğunda setup yap
@@ -46,15 +46,20 @@ class PhilipsTvAccessory {
   setupTVAccessory() {
     const uuid = this.api.hap.uuid.generate(pluginName + this.config.name);
     this.tvAccessory = new this.api.platformAccessory(
-    
+      this.config.name,
+      uuid,
+      Categories.TELEVISION
+    );
+    this.tvAccessory.context.isexternal = true;
+
     this.registerAccessoryInformationService();
     this.registerTelevisionService();
     this.registerVolumeService();
 
-    if (config.has_ambilight) {
+    if (this.config.has_ambilight) {
       this.registerAmbilightService();
     }
-    if (config.inputs) {
+    if (this.config.inputs) {
       this.registerInputService();
     }
 
@@ -84,7 +89,7 @@ class PhilipsTvAccessory {
   registerTelevisionService = () => {
     const { name, poll_status_interval } = this.config;
     const { ConfiguredName, SleepDiscoveryMode, Active } = Characteristic;
-    
+
     // TV Service oluştur
     this.tvService = new Service.Television(name, name);
     const power = this.tvService.getCharacteristic(Active);
@@ -138,7 +143,7 @@ class PhilipsTvAccessory {
 
     // TV Speaker Service ekle
     this.tvSpeaker = new Service.TelevisionSpeaker(name + " Speaker", "speaker");
-    
+
     this.tvSpeaker.getCharacteristic(Characteristic.Mute)
       .on("get", (callback) => {
         this.PhilipsTV.getVolumeState((err, value) => {
@@ -221,15 +226,15 @@ class PhilipsTvAccessory {
 
     // Ambilight'ı ayrı bir accessory olarak değil, TV'nin bir özelliği olarak ekleyelim
     // Bunu yapmak için ConfiguredName kullanabiliriz veya InputSource olarak ekleyebiliriz
-    
+
     // Ambilight Input Source olarak ekle
     const ambilightInput = this.createInputSource(
-      "Ambilight", 
-      "Ambilight", 
+      "Ambilight",
+      "Ambilight",
       999, // Yüksek bir numara ver ki diğer inputlarla karışmasın
       Characteristic.InputSourceType.OTHER
     );
-    
+
     this.tvService.addLinkedService(ambilightInput);
     this.tvAccessory.addService(ambilightInput);
 
@@ -247,7 +252,7 @@ class PhilipsTvAccessory {
         this.state.ambilight = value;
         this.PhilipsTV.setAmbilightState(value, callback);
       });
-    
+
     // Brightness kontrolü ekle
     this.ambilightService.getCharacteristic(Characteristic.Brightness)
       .on("get", (callback) => {
@@ -258,7 +263,7 @@ class PhilipsTvAccessory {
         // Ambilight brightness API'si varsa buraya ekle
         callback(null);
       });
-    
+
     this.tvAccessory.addService(this.ambilightService);
 
     if (poll_status_interval) {
@@ -277,7 +282,7 @@ class PhilipsTvAccessory {
     // Volume artık TV Speaker servisi üzerinden kontrol ediliyor
     // Ayrı bir volume service'i eklemeye gerek yok
     const { poll_status_interval } = this.config;
-    
+
     if (poll_status_interval) {
       setInterval(() => {
         this.PhilipsTV.getVolumeState((err, value) => {
