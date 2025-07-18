@@ -21,18 +21,31 @@ class PhilipsTvAccessory {
   constructor(log, config, api) {
     console.log("[PhilipsTV] Constructor called");
     this.log = log;
-    this.api = api;
     this.config = { ...this.config, ...config };
     this.PhilipsTV = new PhilipsTV(config);
 
-    // TV Accessory oluştur
-    const uuid = this.api.hap.uuid.generate(pluginName + config.name);
+    // API kontrolü
+    if (!api) {
+      this.log.error("API parameter is missing!");
+      return;
+    }
+    
+    this.api = api;
+
+    // Homebridge hazır olduğunda setup yap
+    if (api.version < 2.1) {
+      throw new Error("Homebridge version (" + api.version + ") not supported");
+    }
+
+    this.api.on('didFinishLaunching', () => {
+      this.log.debug('Executed didFinishLaunching callback');
+      this.setupTVAccessory();
+    });
+  }
+
+  setupTVAccessory() {
+    const uuid = this.api.hap.uuid.generate(pluginName + this.config.name);
     this.tvAccessory = new this.api.platformAccessory(
-      config.name, 
-      uuid, 
-      Categories.TELEVISION
-    );
-    this.tvAccessory.context.isexternal = true;
     
     this.registerAccessoryInformationService();
     this.registerTelevisionService();
@@ -57,14 +70,15 @@ class PhilipsTvAccessory {
     const { name, model_year } = this.config;
     const { Name, Manufacturer, Model, FirmwareRevision } = Characteristic;
 
-    const infoService = new Service.AccessoryInformation();
-    infoService
-      .setCharacteristic(Name, name)
-      .setCharacteristic(Manufacturer, "Philips")
-      .setCharacteristic(Model, "Year " + model_year)
-      .setCharacteristic(FirmwareRevision, pkg.version);
-    
-    this.tvAccessory.addService(infoService);
+    // AccessoryInformation service'i zaten mevcut, sadece güncelle
+    const infoService = this.tvAccessory.getService(Service.AccessoryInformation);
+    if (infoService) {
+      infoService
+        .setCharacteristic(Name, name)
+        .setCharacteristic(Manufacturer, "Philips")
+        .setCharacteristic(Model, "Year " + model_year)
+        .setCharacteristic(FirmwareRevision, pkg.version);
+    }
   };
 
   registerTelevisionService = () => {
