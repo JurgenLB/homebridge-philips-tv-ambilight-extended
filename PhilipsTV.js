@@ -4,9 +4,28 @@ const wol = require('wake_on_lan');
 class PhilipsTV {
     constructor(config) {
         this.config = config;
-        this.apiUrl = `https://${config.ip_address}:1926/6/`;
+        
         this.wolURL = config.wol_url;
+        this.model_year = config.model_year;
+        this.model_year_nr = parseInt(this.model_year);
+    
+        // CHOOSING API VERSION BY MODEL/YEAR
+        switch (this.model_year_nr) {
+            case 2016:
+                this.api_version = 6;
+                break;
+            case 2014:
+                this.api_version = 5;
+                break;
+            default:
+                this.api_version = 1;
+            }
+        // CONNECTION SETTINGS
+        this.protocol = (this.api_version > 5) ? 'https' : 'http';
+        this.portno = (this.api_version > 5) ? '1926' : '1925';
+        this.apiUrl = `${this.protocol}://${config.ip_address}:${this.portno}/${this.api_version}/`;
     }
+
 
     api(path, body = null) {
         return new Promise((resolve, reject) => {
