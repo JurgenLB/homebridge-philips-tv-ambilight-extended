@@ -1,0 +1,105 @@
+{
+    "title": "Homebridge PhilipsTV Accessory Configuration",
+    "pluginAlias": "PhilipsTV",
+    "pluginType": "accessory",
+    "singular": false,
+    "headerDisplay": "Homebridge plugin for PhilipsTV.",
+    "footerDisplay": "For additional information visit [Plugin Homepage](https://github.com/m2ert/homebridge)",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string",
+          "default": "Name of the Accessory"
+        },
+        "ip_address": {
+          "title": "IP_address V4",
+          "type": "string",
+          "format": "ipv4",
+          "description": "IP address of the Television"
+        },
+        "poll_status_interval": {
+          "title": "Poll interval",
+          "type": "integer",
+          "minimum": 5,
+          "default": 30,
+          "description": "Polling interval of the TV"
+        },
+        "model_year": {
+          "title": "Model Year",
+          "type": "integer",
+          "default": 2016,
+          "description": "Model year of the TV"
+        },
+        "has_ambilight": {
+          "title": "Ambilight",
+          "type": "boolean",
+          "default": false,
+          "description": "Whether the TV has Ambilight feature exposed to Homebridge"
+        },
+        "wol_url": {
+          "title": "WOL url",
+          "type": "string",
+          "description": "Wake On LAN for TV"
+        },
+        "username": {
+          "title": "User Name",
+          "type": "string",
+          "description": "API username for TV"
+        },
+        "password": {
+          "title": "Password",
+          "type": "string",
+          "description": "API password for TV"
+        },
+        "inputs": {
+            "type": "list",
+            "name": {
+              "title": "Name",
+              "type": "string",
+              "description": "Name of the Accessory"
+            },
+            "launch": {
+
+                "intent": {
+                  "component" : {
+                    "packageName": {
+                      "title": "packageName",
+                      "type": "string",
+                      "description": "Name off the App service"
+                    }
+                    "className": {
+                      "title": "className",
+                      "type": "string",
+                      "description": "endpoint off the App service"
+                    }
+                  },
+                  "action": {
+                    "title": "Action",
+                    "type": "string",
+                    "description": "Program to execute on action"
+                  }
+
+              }
+          },
+          "name": {
+            "title": "Name",
+            "type": "string",
+            "description": "Name of the channel"
+           },
+          "channel": {
+            "title": "Name",
+            "type": "enom",
+            "description": "Nummer of the channel"
+          }
+        },
+        "required": [
+          "name",
+          "ip_address",
+          "poll_status_interval",
+          "model_year"
+        ]
+    }
+  }
+}
