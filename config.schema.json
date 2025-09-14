@@ -14,7 +14,7 @@
                 "default": "Name of the Accessory"
             },
             "ip_address": {
-                "title": "IP_address V4",
+                "title": "IP address V4",
                 "type": "string",
                 "format": "ipv4",
                 "description": "IP address of the Television"
@@ -58,12 +58,19 @@
                 "items": {
                     "type": "object",
                     "properties": {
-                        "name": {
+                        "name": { "type": "string", "description": "Name of the input" },
+                        "type": {
                             "type": "string",
-                            "description": "Name of the channel"
+                            "enum": ["channel", "launch"],
+                            "description": "Type of input"
+                        },
+                        "channel": {
+                            "type": "number",
+                            "description": "Number of the channel - Only use this when Channel is selected"
                         },
                         "launch": {
                             "type": "object",
+                            "description": "Launch Application configuration - Do NOT fill this when Channel is selected",
                             "properties": {
                                 "intent": {
                                     "type": "object",
@@ -71,34 +78,25 @@
                                         "component": {
                                             "type": "object",
                                             "properties": {
-                                                "packageName": {
-                                                    "type": "string"
-                                                },
-                                                "className": {
-                                                    "type": "string"
-                                                }
+                                                "packageName": { "type": "string" },
+                                                "className": { "type": "string" }
                                             }
                                         },
-                                        "action": {
-                                            "type": "string"
-                                        }
+                                        "action": { "type": "string" }
                                     }
                                 }
                             }
-                        },
-                        "channel": {
-                            "type": "string",
-                            "description": "Number of the channel"
                         }
-                    }
+                    },
+                    "required": ["name", "type"]
                 }
-            },
-            "required": [
-                "name",
-                "ip_address",
-                "poll_status_interval",
-                "model_year"
-            ]
-        }
+            }
+        },
+        "required": [
+            "name",
+            "ip_address",
+            "poll_status_interval",
+            "model_year"
+        ]
     }
 }
