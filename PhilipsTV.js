@@ -66,6 +66,15 @@ class PhilipsTV {
         }
     }
 
+    async getSystemState() {
+        try {
+            const res = await this.api("system");
+            return res
+        } catch {
+            return false;
+        }
+    }
+
     async getPowerState() {
         try {
             const res = await this.api("powerstate");
@@ -145,7 +154,6 @@ class PhilipsTV {
         if (this.config.has_ambilight) {
             this.createAmbilightSwitchService();
         }
-
         return this.services;
     }
 
@@ -176,9 +184,7 @@ class PhilipsTV {
             .onGet(() => this.getMuteState())
             .onSet((v) => this.setMuteState(v));
 
-        // TelevisionSpeaker must be added to services array to get proper iid assignment
         this.services.push(this.tvSpeaker);
-        // Then link it to the Television service (HomeKit will automatically handle the UI hierarchy)
         this.tvService.addLinkedService(this.tvSpeaker);
     }
 
@@ -242,11 +248,17 @@ class PhilipsTV {
         // Configure AccessoryInformation service (don't create new one to avoid UUID collision)
         // This will be available for external configuration via index.js
         // The actual service is created automatically by Homebridge/HAP-NodeJS
+        const system = this.getPowerState()
+            const serialNumber = system.name;
+            const TVversion = system.nettvversion;
+            const language = system.menulanguage;
+            const country = system.country;
+
         this.accessoryInformation = {
             name: this.config.name,
             manufacturer: 'Philips',
-            model: 'Android TV',
-            serialNumber: 'PhilipsTV-' + this.config.name,
+            model: this.config.model_year,
+            serialNumber: serialNumber | 'TV-' + this.config.name,
             firmwareRevision: require('./package.json').version
         };
     }
