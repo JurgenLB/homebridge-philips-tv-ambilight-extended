@@ -197,7 +197,7 @@ class PhilipsTV {
             .onSet(() => {});
 
         this.config.inputs.forEach((input, index) => {
-            const inputSource = new this.Service.InputSource(input.name, input.name);
+            const inputSource = new this.Service.InputSource(input.name, `input-${index}`);
             inputSource
                 .setCharacteristic(this.Characteristic.Identifier, index)
                 .setCharacteristic(this.Characteristic.ConfiguredName, input.name)
@@ -223,7 +223,7 @@ class PhilipsTV {
 
         this.ambilightModes.forEach((mode, idx) => {
             const id = baseId + idx;
-            const inputSource = new this.Service.InputSource(mode, "Ambilight " + mode);
+            const inputSource = new this.Service.InputSource(mode, `ambilight-${idx}`);
             inputSource
                 .setCharacteristic(this.Characteristic.Identifier, id)
                 .setCharacteristic(this.Characteristic.ConfiguredName, "Ambilight " + mode)
