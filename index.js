@@ -46,7 +46,7 @@ class PhilipsTvAccessory {
 
         // Get all services from PhilipsTV
         const services = this.PhilipsTV.getServices();
-        
+
         // Add all services to the accessory
         services.forEach(service => {
             this.tvAccessory.addService(service);
