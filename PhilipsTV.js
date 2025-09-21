@@ -177,6 +177,9 @@ class PhilipsTV {
             .onGet(() => this.getMuteState())
             .onSet((v) => this.setMuteState(v));
 
+        // TelevisionSpeaker must be added to services array to get proper iid assignment
+        this.services.push(this.tvSpeaker);
+        // Then link it to the Television service (HomeKit will automatically handle the UI hierarchy)
         this.tvService.addLinkedService(this.tvSpeaker);
     }
 
