@@ -177,7 +177,8 @@ class PhilipsTV {
     }
 
     createAccessoryInformationService() {
-        this.informationService = new this.Service.AccessoryInformation()
+        this.informationService = new this.Service.AccessoryInformation();
+        this.informationService
             .setCharacteristic(this.Characteristic.Name, this.config.name)
             .setCharacteristic(this.Characteristic.Manufacturer, 'Philips')
             .setCharacteristic(this.Characteristic.Model, 'Android TV')
