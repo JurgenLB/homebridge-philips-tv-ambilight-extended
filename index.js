@@ -33,18 +33,6 @@ class PhilipsTvAccessory {
         this.tvAccessory = new this.api.platformAccessory(this.config.name, uuid, Categories.TELEVISION);
         this.tvAccessory.context.isexternal = true;
 
-        // Configure AccessoryInformation service (automatically created by Homebridge)
-        const accessoryInfo = this.tvAccessory.getService(this.api.hap.Service.AccessoryInformation);
-        const accessoryInfoData = this.PhilipsTV.getAccessoryInformation();
-        if (accessoryInfo && accessoryInfoData) {
-            accessoryInfo
-                .setCharacteristic(this.api.hap.Characteristic.Name, accessoryInfoData.name)
-                .setCharacteristic(this.api.hap.Characteristic.Manufacturer, accessoryInfoData.manufacturer)
-                .setCharacteristic(this.api.hap.Characteristic.Model, accessoryInfoData.model)
-                .setCharacteristic(this.api.hap.Characteristic.SerialNumber, accessoryInfoData.serialNumber)
-                .setCharacteristic(this.api.hap.Characteristic.FirmwareRevision, accessoryInfoData.firmwareRevision);
-        }
-
         // Get all services from PhilipsTV
         const services = this.PhilipsTV.getServices();
 
