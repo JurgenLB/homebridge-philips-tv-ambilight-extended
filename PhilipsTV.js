@@ -7,11 +7,11 @@ class PhilipsTV {
         this.config = config;
         this.Service = Service;
         this.Characteristic = Characteristic;
-        
+
         this.wolURL = config.wol_url;
         this.model_year = config.model_year;
         this.model_year_nr = parseInt(this.model_year);
-    
+
         // CHOOSING API VERSION BY MODEL/YEAR
         switch (this.model_year_nr) {
             case 2016:
@@ -27,7 +27,7 @@ class PhilipsTV {
         this.protocol = (this.api_version > 5) ? 'https' : 'http';
         this.portno = (this.api_version > 5) ? '1926' : '1925';
         this.apiUrl = `${this.protocol}://${config.ip_address}:${this.portno}/${this.api_version}/`;
-        
+
         // Configure axios with default settings
         this.httpClient = axios.create({
             timeout: 3000,
@@ -54,7 +54,7 @@ class PhilipsTV {
                 data: body || undefined,
                 headers: body ? { 'Content-Type': 'application/json' } : undefined
             };
-            
+
             const response = await this.httpClient(config);
             return response.data || {};
         } catch (error) {
@@ -141,7 +141,7 @@ class PhilipsTV {
         // Note: AccessoryInformation service is automatically created by Homebridge
         // We don't need to create it manually to avoid UUID collision
         this.createInputSourceServices();
-        
+
         // Only create ambilight switch service if ambilight is enabled
         if (this.config.has_ambilight) {
             this.createAmbilightSwitchService();
@@ -168,18 +168,16 @@ class PhilipsTV {
     createTelevisionSpeakerService() {
         this.tvSpeaker = new this.Service.TelevisionSpeaker(this.config.name + " Speaker");
         this.tvSpeaker.setCharacteristic(this.Characteristic.VolumeControlType, this.Characteristic.VolumeControlType.ABSOLUTE);
-        
+
         this.tvSpeaker.getCharacteristic(this.Characteristic.Volume)
             .onGet(() => this.getVolumeState())
             .onSet((v) => this.setVolumeState(v));
-        
+
         this.tvSpeaker.getCharacteristic(this.Characteristic.Mute)
             .onGet(() => this.getMuteState())
             .onSet((v) => this.setMuteState(v));
 
-        // TelevisionSpeaker should be linked to Television service but not added separately to services array
         this.tvService.addLinkedService(this.tvSpeaker);
-        // Note: Removed this.services.push(this.tvSpeaker) to prevent duplicate service registration
     }
 
     // Note: AccessoryInformation service is automatically created by Homebridge
@@ -188,7 +186,7 @@ class PhilipsTV {
 
     createInputSourceServices() {
         if (!this.config.inputs) return;
-        
+
         this.tvService.setCharacteristic(this.Characteristic.ActiveIdentifier, 0);
         this.tvService.getCharacteristic(this.Characteristic.ActiveIdentifier)
             .onGet(() => 0)
@@ -211,7 +209,7 @@ class PhilipsTV {
     createAmbilightSwitchService() {
         // Create a StatefulProgrammableSwitch for ambilight mode control
         this.ambilightSwitch = new this.Service.StatefulProgrammableSwitch("Ambilight Control", "ambilight-switch");
-        
+
         // Set up the programmable switch event characteristic
         this.ambilightSwitch
             .setCharacteristic(this.Characteristic.Name, "Ambilight Control")
