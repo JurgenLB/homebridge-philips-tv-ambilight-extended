@@ -221,7 +221,7 @@ class PhilipsTV {
             const inputSource = new this.Service.InputSource(serviceName, `ambilight-${idx}`);
             inputSource
                 .setCharacteristic(this.Characteristic.Identifier, id)
-                .setCharacteristic(this.Characteristic.ConfiguredName, "Ambilight " + mode)
+                .setCharacteristic(this.Characteristic.ConfiguredName, "Ambilight " + serviceName)
                 .setCharacteristic(this.Characteristic.IsConfigured, this.Characteristic.IsConfigured.CONFIGURED)
                 .setCharacteristic(this.Characteristic.InputSourceType, this.Characteristic.InputSourceType.HDMI)
                 .setCharacteristic(this.Characteristic.CurrentVisibilityState, this.Characteristic.CurrentVisibilityState.SHOWN);
