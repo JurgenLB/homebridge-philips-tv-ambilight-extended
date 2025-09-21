@@ -41,7 +41,8 @@ class PhilipsTV {
         });
 
         // HomeKit setup properties
-        this.ambilightModes = ["FOLLOW_VIDEO", "FOLLOW_AUDIO", "Lounge_light"];
+        // Use configurable ambilight modes or fall back to defaults
+        this.ambilightModes = this.config.ambilight_modes || ["FOLLOW_VIDEO", "FOLLOW_AUDIO", "Lounge_light"];
         this.services = [];
     }
 

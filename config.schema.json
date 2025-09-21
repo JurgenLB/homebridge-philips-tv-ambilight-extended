@@ -38,6 +38,15 @@
                 "default": false,
                 "description": "Whether the TV has Ambilight feature exposed to Homebridge"
             },
+            "ambilight_modes": {
+                "title": "Ambilight Modes",
+                "type": "array",
+                "items": {
+                    "type": "string"
+                },
+                "default": ["FOLLOW_VIDEO", "FOLLOW_AUDIO", "Lounge_light"],
+                "description": "List of ambilight modes available for selection. Default modes are FOLLOW_VIDEO, FOLLOW_AUDIO, and Lounge_light"
+            },
             "wol_url": {
                 "title": "WOL url",
                 "type": "string",
