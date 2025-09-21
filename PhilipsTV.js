@@ -138,8 +138,7 @@ class PhilipsTV {
         // Initialize all services
         this.createTelevisionService();
         this.createTelevisionSpeakerService();
-        // Note: AccessoryInformation service is automatically created by Homebridge
-        // We don't need to create it manually to avoid UUID collision
+        this.configureAccessoryInformation();
         this.createInputSourceServices();
 
         // Only create ambilight switch service if ambilight is enabled
