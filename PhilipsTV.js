@@ -223,7 +223,9 @@ class PhilipsTV {
 
         this.ambilightModes.forEach((mode, idx) => {
             const id = baseId + idx;
-            const inputSource = new this.Service.InputSource(mode, `ambilight-${idx}`);
+            // Create HomeKit-compliant service name (replace underscores with spaces)
+            const serviceName = mode.replace(/_/g, ' ');
+            const inputSource = new this.Service.InputSource(serviceName, `ambilight-${idx}`);
             inputSource
                 .setCharacteristic(this.Characteristic.Identifier, id)
                 .setCharacteristic(this.Characteristic.ConfiguredName, "Ambilight " + mode)
