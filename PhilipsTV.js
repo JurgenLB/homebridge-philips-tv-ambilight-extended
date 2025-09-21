@@ -142,9 +142,9 @@ class PhilipsTV {
         // We don't need to create it manually to avoid UUID collision
         this.createInputSourceServices();
         
-        // Only create ambilight input services if ambilight is enabled
+        // Only create ambilight switch service if ambilight is enabled
         if (this.config.has_ambilight) {
-            this.createAmbilightInputServices();
+            this.createAmbilightSwitchService();
         }
 
         return this.services;
@@ -207,32 +207,34 @@ class PhilipsTV {
         });
     }
 
-    createAmbilightInputServices() {
-        const baseId = (this.config.inputs?.length || 0);
+    createAmbilightSwitchService() {
+        // Create a StatefulProgrammableSwitch for ambilight mode control
+        this.ambilightSwitch = new this.Service.StatefulProgrammableSwitch("Ambilight Control", "ambilight-switch");
         
-        this.tvService.getCharacteristic(this.Characteristic.ActiveIdentifier)
+        // Set up the programmable switch event characteristic
+        this.ambilightSwitch
+            .setCharacteristic(this.Characteristic.Name, "Ambilight Control")
+            .setCharacteristic(this.Characteristic.ServiceLabelIndex, 1);
+
+        // Configure the output state characteristic for mode selection
+        this.ambilightSwitch.getCharacteristic(this.Characteristic.OutputState)
+            .setProps({
+                minValue: 0,
+                maxValue: this.ambilightModes.length - 1,
+                validValues: this.ambilightModes.map((_, idx) => idx)
+            })
+            .onGet(() => {
+                // Return current ambilight mode index (defaulting to 0)
+                return 0;
+            })
             .onSet(async (value) => {
-                if (value >= baseId && value < baseId + this.ambilightModes.length) {
-                    const mode = this.ambilightModes[value - baseId];
+                if (value >= 0 && value < this.ambilightModes.length) {
+                    const mode = this.ambilightModes[value];
                     await this.setAmbilightMode(mode);
                 }
             });
 
-        this.ambilightModes.forEach((mode, idx) => {
-            const id = baseId + idx;
-            // Create HomeKit-compliant service name (replace underscores with spaces)
-            const serviceName = mode.replace(/_/g, ' ');
-            const inputSource = new this.Service.InputSource(serviceName, `ambilight-${idx}`);
-            inputSource
-                .setCharacteristic(this.Characteristic.Identifier, id)
-                .setCharacteristic(this.Characteristic.ConfiguredName, "Ambilight " + serviceName)
-                .setCharacteristic(this.Characteristic.IsConfigured, this.Characteristic.IsConfigured.CONFIGURED)
-                .setCharacteristic(this.Characteristic.InputSourceType, this.Characteristic.InputSourceType.HDMI)
-                .setCharacteristic(this.Characteristic.CurrentVisibilityState, this.Characteristic.CurrentVisibilityState.SHOWN);
-
-            this.tvService.addLinkedService(inputSource);
-            this.services.push(inputSource);
-        });
+        this.services.push(this.ambilightSwitch);
     }
 }
 
