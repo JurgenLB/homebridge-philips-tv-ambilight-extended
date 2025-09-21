@@ -141,7 +141,11 @@ class PhilipsTV {
         // Note: AccessoryInformation service is automatically created by Homebridge
         // We don't need to create it manually to avoid UUID collision
         this.createInputSourceServices();
-        this.createAmbilightInputServices();
+        
+        // Only create ambilight input services if ambilight is enabled
+        if (this.config.has_ambilight) {
+            this.createAmbilightInputServices();
+        }
 
         return this.services;
     }
