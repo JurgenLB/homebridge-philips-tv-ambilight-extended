@@ -241,7 +241,7 @@ class PhilipsTV {
                 }
             });
 
-        this.services.push(this.ambilightSwitch);
+        this.services.addLinkedService(this.ambilightSwitch);
     }
 
     configureAccessoryInformation() {
