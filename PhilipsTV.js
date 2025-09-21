@@ -41,8 +41,7 @@ class PhilipsTV {
         });
 
         // HomeKit setup properties
-        // Use configurable ambilight modes or fall back to defaults
-        this.ambilightModes = this.config.ambilight_modes || ["FOLLOW_VIDEO", "FOLLOW_AUDIO", "Lounge_light"];
+        this.ambilightModes = ["FOLLOW_VIDEO", "FOLLOW_AUDIO", "Lounge_light"];
         this.services = [];
     }
 
@@ -178,8 +177,9 @@ class PhilipsTV {
             .onGet(() => this.getMuteState())
             .onSet((v) => this.setMuteState(v));
 
+        // TelevisionSpeaker should be linked to Television service but not added separately to services array
         this.tvService.addLinkedService(this.tvSpeaker);
-        this.services.push(this.tvSpeaker);
+        // Note: Removed this.services.push(this.tvSpeaker) to prevent duplicate service registration
     }
 
     // Note: AccessoryInformation service is automatically created by Homebridge
