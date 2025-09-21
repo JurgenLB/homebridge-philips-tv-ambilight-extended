@@ -218,8 +218,8 @@ class PhilipsTV {
             .setCharacteristic(this.Characteristic.Name, "Ambilight Control")
             .setCharacteristic(this.Characteristic.ServiceLabelIndex, 1);
 
-        // Configure the output state characteristic for mode selection
-        this.ambilightSwitch.getCharacteristic(this.Characteristic.OutputState)
+        // Configure the programmable switch output state characteristic for mode selection
+        this.ambilightSwitch.getCharacteristic(this.Characteristic.ProgrammableSwitchOutputState)
             .setProps({
                 minValue: 0,
                 maxValue: this.ambilightModes.length - 1,
