@@ -4,7 +4,7 @@
     "pluginType": "accessory",
     "singular": false,
     "headerDisplay": "Homebridge plugin for PhilipsTV.",
-    "footerDisplay": "For additional information visit [Plugin Homepage](https://github.com/m2ert/homebridge)",
+    "footerDisplay": "For additional information visit [Plugin Homepage](https://github.com/JurgenLB/homebridge-philips-tv-ambilight-extended)",
     "schema": {
         "type": "object",
         "properties": {

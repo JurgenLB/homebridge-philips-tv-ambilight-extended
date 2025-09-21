@@ -1,4 +1,4 @@
-const request = require("request");
+const axios = require("axios");
 const wol = require('wake_on_lan');
 
 class PhilipsTV {
@@ -24,31 +24,39 @@ class PhilipsTV {
         this.protocol = (this.api_version > 5) ? 'https' : 'http';
         this.portno = (this.api_version > 5) ? '1926' : '1925';
         this.apiUrl = `${this.protocol}://${config.ip_address}:${this.portno}/${this.api_version}/`;
+        
+        // Configure axios with default settings
+        this.httpClient = axios.create({
+            timeout: 3000,
+            httpsAgent: this.api_version > 5 ? new (require('https').Agent)({
+                rejectUnauthorized: false
+            }) : undefined,
+            auth: {
+                username: this.config.username,
+                password: this.config.password
+            }
+        });
     }
 
 
-    api(path, body = null) {
-        return new Promise((resolve, reject) => {
-            request({
-                rejectUnauthorized: false,
-                timeout: 3000,
-                auth: {
-                    user: this.config.username,
-                    pass: this.config.password,
-                    sendImmediately: false
-                },
+    async api(path, body = null) {
+        try {
+            const config = {
                 method: body ? "POST" : "GET",
-                body: body ? JSON.stringify(body) : null,
-                url: this.apiUrl + path
-            }, (err, res, body) => {
-                if (err) return reject(err);
-                try {
-                    resolve(body ? JSON.parse(body) : {});
-                } catch {
-                    resolve({});
-                }
-            });
-        });
+                url: this.apiUrl + path,
+                data: body || undefined,
+                headers: body ? { 'Content-Type': 'application/json' } : undefined
+            };
+            
+            const response = await this.httpClient(config);
+            return response.data || {};
+        } catch (error) {
+            if (error.response) {
+                // Request made but server responded with error status
+                return {};
+            }
+            throw error;
+        }
     }
 
     async getPowerState() {

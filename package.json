@@ -23,28 +23,29 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/m2ert/homebridge-philips-tv-ambilight-extended.git"
+    "url": "git+https://github.com/JurgenLB/homebridge-philips-tv-ambilight-extended.git"
   },
   "bugs": {
-    "url": "https://github.com/m2ert/homebridge-philips-tv-ambilight-extended/issues"
+    "url": "https://github.com/JurgenLB/homebridge-philips-tv-ambilight-extended/issues"
   },
-  "homepage": "https://github.com/m2ert/homebridge-philips-tv-ambilight-extended#readme",
+  "homepage": "https://github.com/JurgenLB/homebridge-philips-tv-ambilight-extended#readme",
   "engines": {
     "node": ">=14.0.0",
     "homebridge": ">=1.0.0"
   },
   "dependencies": {
-    "request": "^2.88.2",
+    "axios": "^1.12.2",
     "wake_on_lan": "^1.0.0"
   },
   "funding": {
     "type": "github",
-    "url": "https://github.com/sponsors/m2ert"
+    "url": "https://github.com/sponsors/JurgenLB"
   },
   "files": [
     "index.js",
     "PhilipsTV.js",
-    "README.md",
-    "config.sample.json"
+    "readme.md",
+    "config.sample.json",
+    "config.schema.json"
   ]
 }
