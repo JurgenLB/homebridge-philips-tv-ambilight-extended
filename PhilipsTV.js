@@ -237,6 +237,23 @@ class PhilipsTV {
 
         this.services.push(this.ambilightSwitch);
     }
+
+    configureAccessoryInformation() {
+        // Configure AccessoryInformation service (don't create new one to avoid UUID collision)
+        // This will be available for external configuration via index.js
+        // The actual service is created automatically by Homebridge/HAP-NodeJS
+        this.accessoryInformation = {
+            name: this.config.name,
+            manufacturer: 'Philips',
+            model: 'Android TV',
+            serialNumber: 'PhilipsTV-' + this.config.name,
+            firmwareRevision: require('./package.json').version
+        };
+    }
+
+    getAccessoryInformation() {
+        return this.accessoryInformation;
+    }
 }
 
 module.exports = PhilipsTV;
