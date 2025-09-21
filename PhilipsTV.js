@@ -1,9 +1,12 @@
 const axios = require("axios");
 const wol = require('wake_on_lan');
+const pkg = require("./package.json");
 
 class PhilipsTV {
-    constructor(config) {
+    constructor(config, Service, Characteristic) {
         this.config = config;
+        this.Service = Service;
+        this.Characteristic = Characteristic;
         
         this.wolURL = config.wol_url;
         this.model_year = config.model_year;
@@ -36,6 +39,10 @@ class PhilipsTV {
                 password: this.config.password
             }
         });
+
+        // HomeKit setup properties
+        this.ambilightModes = ["FOLLOW_VIDEO", "FOLLOW_AUDIO", "Lounge_light"];
+        this.services = [];
     }
 
 
@@ -120,6 +127,111 @@ class PhilipsTV {
             styleName: mode,
             isExpert: false,
             menuSetting: "NATURAL"
+        });
+    }
+
+    getServices() {
+        if (this.services.length > 0) {
+            return this.services;
+        }
+
+        // Initialize all services
+        this.createTelevisionService();
+        this.createTelevisionSpeakerService();
+        this.createAccessoryInformationService();
+        this.createInputSourceServices();
+        this.createAmbilightInputServices();
+
+        return this.services;
+    }
+
+    createTelevisionService() {
+        this.tvService = new this.Service.Television(this.config.name);
+        this.tvService.setCharacteristic(this.Characteristic.ConfiguredName, this.config.name);
+        this.tvService.setCharacteristic(this.Characteristic.SleepDiscoveryMode, this.Characteristic.SleepDiscoveryMode.ALWAYS_DISCOVERABLE);
+
+        this.tvService.getCharacteristic(this.Characteristic.Active)
+            .onGet(() => this.getPowerState())
+            .onSet((v) => this.setPowerState(v));
+
+        this.tvService.getCharacteristic(this.Characteristic.RemoteKey)
+            .onSet((v) => this.sendRemoteKey(v));
+
+        this.services.push(this.tvService);
+    }
+
+    createTelevisionSpeakerService() {
+        this.tvSpeaker = new this.Service.TelevisionSpeaker(this.config.name + " Speaker");
+        this.tvSpeaker.setCharacteristic(this.Characteristic.VolumeControlType, this.Characteristic.VolumeControlType.ABSOLUTE);
+        
+        this.tvSpeaker.getCharacteristic(this.Characteristic.Volume)
+            .onGet(() => this.getVolumeState())
+            .onSet((v) => this.setVolumeState(v));
+        
+        this.tvSpeaker.getCharacteristic(this.Characteristic.Mute)
+            .onGet(() => this.getMuteState())
+            .onSet((v) => this.setMuteState(v));
+
+        this.tvService.addLinkedService(this.tvSpeaker);
+        this.services.push(this.tvSpeaker);
+    }
+
+    createAccessoryInformationService() {
+        this.informationService = new this.Service.AccessoryInformation()
+            .setCharacteristic(this.Characteristic.Name, this.config.name)
+            .setCharacteristic(this.Characteristic.Manufacturer, 'Philips')
+            .setCharacteristic(this.Characteristic.Model, 'Android TV')
+            .setCharacteristic(this.Characteristic.SerialNumber, 'PhilipsTV-' + this.config.name)
+            .setCharacteristic(this.Characteristic.FirmwareRevision, pkg.version);
+
+        this.services.push(this.informationService);
+    }
+
+    createInputSourceServices() {
+        if (!this.config.inputs) return;
+        
+        this.tvService.setCharacteristic(this.Characteristic.ActiveIdentifier, 0);
+        this.tvService.getCharacteristic(this.Characteristic.ActiveIdentifier)
+            .onGet(() => 0)
+            .onSet(() => {});
+
+        this.config.inputs.forEach((input, index) => {
+            const inputSource = new this.Service.InputSource(input.name, input.name);
+            inputSource
+                .setCharacteristic(this.Characteristic.Identifier, index)
+                .setCharacteristic(this.Characteristic.ConfiguredName, input.name)
+                .setCharacteristic(this.Characteristic.IsConfigured, this.Characteristic.IsConfigured.CONFIGURED)
+                .setCharacteristic(this.Characteristic.InputSourceType, this.Characteristic.InputSourceType.APPLICATION)
+                .setCharacteristic(this.Characteristic.CurrentVisibilityState, this.Characteristic.CurrentVisibilityState.SHOWN);
+
+            this.tvService.addLinkedService(inputSource);
+            this.services.push(inputSource);
+        });
+    }
+
+    createAmbilightInputServices() {
+        const baseId = (this.config.inputs?.length || 0);
+        
+        this.tvService.getCharacteristic(this.Characteristic.ActiveIdentifier)
+            .onSet(async (value) => {
+                if (value >= baseId && value < baseId + this.ambilightModes.length) {
+                    const mode = this.ambilightModes[value - baseId];
+                    await this.setAmbilightMode(mode);
+                }
+            });
+
+        this.ambilightModes.forEach((mode, idx) => {
+            const id = baseId + idx;
+            const inputSource = new this.Service.InputSource(mode, "Ambilight " + mode);
+            inputSource
+                .setCharacteristic(this.Characteristic.Identifier, id)
+                .setCharacteristic(this.Characteristic.ConfiguredName, "Ambilight " + mode)
+                .setCharacteristic(this.Characteristic.IsConfigured, this.Characteristic.IsConfigured.CONFIGURED)
+                .setCharacteristic(this.Characteristic.InputSourceType, this.Characteristic.InputSourceType.HDMI)
+                .setCharacteristic(this.Characteristic.CurrentVisibilityState, this.Characteristic.CurrentVisibilityState.SHOWN);
+
+            this.tvService.addLinkedService(inputSource);
+            this.services.push(inputSource);
         });
     }
 }
