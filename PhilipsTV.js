@@ -138,7 +138,8 @@ class PhilipsTV {
         // Initialize all services
         this.createTelevisionService();
         this.createTelevisionSpeakerService();
-        this.createAccessoryInformationService();
+        // Note: AccessoryInformation service is automatically created by Homebridge
+        // We don't need to create it manually to avoid UUID collision
         this.createInputSourceServices();
         this.createAmbilightInputServices();
 
@@ -176,17 +177,9 @@ class PhilipsTV {
         this.services.push(this.tvSpeaker);
     }
 
-    createAccessoryInformationService() {
-        this.informationService = new this.Service.AccessoryInformation();
-        this.informationService
-            .setCharacteristic(this.Characteristic.Name, this.config.name)
-            .setCharacteristic(this.Characteristic.Manufacturer, 'Philips')
-            .setCharacteristic(this.Characteristic.Model, 'Android TV')
-            .setCharacteristic(this.Characteristic.SerialNumber, 'PhilipsTV-' + this.config.name)
-            .setCharacteristic(this.Characteristic.FirmwareRevision, pkg.version);
-
-        this.services.push(this.informationService);
-    }
+    // Note: AccessoryInformation service is automatically created by Homebridge
+    // We don't manually create it to avoid UUID collision with the automatic one
+    // Instead, we can configure it through the accessory if needed
 
     createInputSourceServices() {
         if (!this.config.inputs) return;

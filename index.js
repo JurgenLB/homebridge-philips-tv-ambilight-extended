@@ -33,6 +33,17 @@ class PhilipsTvAccessory {
         this.tvAccessory = new this.api.platformAccessory(this.config.name, uuid, Categories.TELEVISION);
         this.tvAccessory.context.isexternal = true;
 
+        // Configure the automatically created AccessoryInformation service
+        const accessoryInfo = this.tvAccessory.getService(this.api.hap.Service.AccessoryInformation);
+        if (accessoryInfo) {
+            accessoryInfo
+                .setCharacteristic(this.api.hap.Characteristic.Name, this.config.name)
+                .setCharacteristic(this.api.hap.Characteristic.Manufacturer, 'Philips')
+                .setCharacteristic(this.api.hap.Characteristic.Model, 'Android TV')
+                .setCharacteristic(this.api.hap.Characteristic.SerialNumber, 'PhilipsTV-' + this.config.name)
+                .setCharacteristic(this.api.hap.Characteristic.FirmwareRevision, pkg.version);
+        }
+
         // Get all services from PhilipsTV
         const services = this.PhilipsTV.getServices();
         
