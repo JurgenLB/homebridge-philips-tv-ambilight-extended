@@ -253,7 +253,7 @@ class PhilipsTV {
             const TVversion = system.nettvversion;
             const language = system.menulanguage;
             const country = system.country;
-        
+
         this.accessoryInformation = {
             name: this.config.name,
             manufacturer: 'Philips',
