@@ -248,19 +248,32 @@ class PhilipsTV {
         // Configure AccessoryInformation service (don't create new one to avoid UUID collision)
         // This will be available for external configuration via index.js
         // The actual service is created automatically by Homebridge/HAP-NodeJS
-        const system = this.getPowerState()
-            const serialNumber = system.name;
-            const TVversion = system.nettvversion;
-            const language = system.menulanguage;
-            const country = system.country;
-
+        
         this.accessoryInformation = {
             name: this.config.name,
             manufacturer: 'Philips',
-            model: this.config.model_year,
-            serialNumber: serialNumber | 'TV-' + this.config.name,
+            model: 'Android TV',
+            serialNumber: 'PhilipsTV-' + this.config.name,
             firmwareRevision: require('./package.json').version
         };
+
+        // Try to get more accurate system information asynchronously
+        this.updateAccessoryInformation();
+    }
+
+    async updateAccessoryInformation() {
+        try {
+            // Try to get system info for more accurate information
+            const system = await this.api('system');
+            if (system && system.name) {
+                this.accessoryInformation.serialNumber = system.name;
+            }
+            if (system && system.nettvversion) {
+                this.accessoryInformation.firmwareRevision = system.nettvversion;
+            }
+        } catch (error) {
+            // Use fallback values if API call fails - already set above
+        }
     }
 
     getAccessoryInformation() {
