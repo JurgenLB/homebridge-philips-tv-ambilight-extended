@@ -241,7 +241,8 @@ class PhilipsTV {
                 }
             });
 
-        this.services.addLinkedService(this.ambilightSwitch);
+        // Link ambilight switch to TV service for proper UI hierarchy
+        this.tvService.addLinkedService(this.ambilightSwitch);
     }
 
     configureAccessoryInformation() {
