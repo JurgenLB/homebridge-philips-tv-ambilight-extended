@@ -241,7 +241,8 @@ class PhilipsTV {
                 }
             });
 
-        this.services.addLinkedService(this.ambilightSwitch);
+        // Link ambilight switch to TV service for proper UI hierarchy
+        this.tvService.addLinkedService(this.ambilightSwitch);
     }
 
     configureAccessoryInformation() {
@@ -258,9 +259,27 @@ class PhilipsTV {
             name: this.config.name,
             manufacturer: 'Philips',
             model: this.config.model_year,
-            serialNumber: serialNumber | 'TV-' + this.config.name,
+            serialNumber: serialNumber | 'PhilipsTV-' + this.config.name,
             firmwareRevision: require('./package.json').version
         };
+
+        // Try to get more accurate system information asynchronously
+        this.updateAccessoryInformation();
+    }
+
+    async updateAccessoryInformation() {
+        try {
+            // Try to get system info for more accurate information
+            const system = await this.api('system');
+            if (system && system.name) {
+                this.accessoryInformation.serialNumber = system.name;
+            }
+            if (system && system.nettvversion) {
+                this.accessoryInformation.firmwareRevision = system.nettvversion;
+            }
+        } catch (error) {
+            // Use fallback values if API call fails - already set above
+        }
     }
 
     getAccessoryInformation() {
