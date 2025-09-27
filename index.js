@@ -1,6 +1,6 @@
 "use strict";
 const pkg = require("./package.json");
-const PhilipsTV = require("./PhilipsTV");
+const PhilipsTV = new PhilipsTV(config);
 
 let Service, Characteristic, Categories;
 
@@ -118,6 +118,9 @@ class PhilipsTvAccessory {
             this.tvAccessory.addService(inputSource);
             this.tvService.addLinkedService(inputSource);
         });
+    }
+    getServices() {
+        return this.services;
     }
 }
 
