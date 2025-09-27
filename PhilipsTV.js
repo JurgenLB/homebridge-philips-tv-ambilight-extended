@@ -136,6 +136,10 @@ class PhilipsTV {
         });
     }
 
+    getServices() {
+        return this.services;
+    }
+
 }
 
 module.exports = PhilipsTV;
