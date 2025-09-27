@@ -3,11 +3,8 @@ const wol = require('wake_on_lan');
 const pkg = require("./package.json");
 
 class PhilipsTV {
-    constructor(config, Service, Characteristic) {
+    constructor(config) {
         this.config = config;
-        this.Service = Service;
-        this.Characteristic = Characteristic;
-
         this.wolURL = config.wol_url;
         this.model_year = config.model_year;
         this.model_year_nr = parseInt(this.model_year);
@@ -139,133 +136,6 @@ class PhilipsTV {
         });
     }
 
-    getServices() {
-        if (this.services.length > 0) {
-            return this.services;
-        }
-
-        // Initialize all services
-        this.createTelevisionService();
-        this.createTelevisionSpeakerService();
-        this.configureAccessoryInformation();
-        this.createInputSourceServices();
-
-        // Only create ambilight switch service if ambilight is enabled
-        if (this.config.has_ambilight) {
-            this.createAmbilightSwitchService();
-        }
-        return this.services;
-    }
-
-    createTelevisionService() {
-        this.tvService = new this.Service.Television(this.config.name);
-        this.tvService.setCharacteristic(this.Characteristic.ConfiguredName, this.config.name);
-        this.tvService.setCharacteristic(this.Characteristic.SleepDiscoveryMode, this.Characteristic.SleepDiscoveryMode.ALWAYS_DISCOVERABLE);
-
-        this.tvService.getCharacteristic(this.Characteristic.Active)
-            .onGet(() => this.getPowerState())
-            .onSet((v) => this.setPowerState(v));
-
-        this.tvService.getCharacteristic(this.Characteristic.RemoteKey)
-            .onSet((v) => this.sendRemoteKey(v));
-
-        this.services.push(this.tvService);
-    }
-
-    createTelevisionSpeakerService() {
-        this.tvSpeaker = new this.Service.TelevisionSpeaker(this.config.name + " Speaker");
-        this.tvSpeaker.setCharacteristic(this.Characteristic.VolumeControlType, this.Characteristic.VolumeControlType.ABSOLUTE);
-
-        this.tvSpeaker.getCharacteristic(this.Characteristic.Volume)
-            .onGet(() => this.getVolumeState())
-            .onSet((v) => this.setVolumeState(v));
-
-        this.tvSpeaker.getCharacteristic(this.Characteristic.Mute)
-            .onGet(() => this.getMuteState())
-            .onSet((v) => this.setMuteState(v));
-
-        this.services.push(this.tvSpeaker);
-        this.tvService.addLinkedService(this.tvSpeaker);
-    }
-
-    // Note: AccessoryInformation service is automatically created by Homebridge
-    // We don't manually create it to avoid UUID collision with the automatic one
-    // Instead, we can configure it through the accessory if needed
-
-    createInputSourceServices() {
-        if (!this.config.inputs) return;
-
-        this.tvService.setCharacteristic(this.Characteristic.ActiveIdentifier, 0);
-        this.tvService.getCharacteristic(this.Characteristic.ActiveIdentifier)
-            .onGet(() => 0)
-            .onSet(() => {});
-
-        this.config.inputs.forEach((input, index) => {
-            const inputSource = new this.Service.InputSource(input.name, `input-${index}`);
-            inputSource
-                .setCharacteristic(this.Characteristic.Identifier, index)
-                .setCharacteristic(this.Characteristic.ConfiguredName, input.name)
-                .setCharacteristic(this.Characteristic.IsConfigured, this.Characteristic.IsConfigured.CONFIGURED)
-                .setCharacteristic(this.Characteristic.InputSourceType, this.Characteristic.InputSourceType.APPLICATION)
-                .setCharacteristic(this.Characteristic.CurrentVisibilityState, this.Characteristic.CurrentVisibilityState.SHOWN);
-
-            this.tvService.addLinkedService(inputSource);
-            this.services.push(inputSource);
-        });
-    }
-
-    createAmbilightSwitchService() {
-        // Create a StatefulProgrammableSwitch for ambilight mode control
-        this.ambilightSwitch = new this.Service.StatefulProgrammableSwitch("Ambilight Control", "ambilight-switch");
-
-        // Set up the programmable switch event characteristic
-        this.ambilightSwitch
-            .setCharacteristic(this.Characteristic.Name, "Ambilight Control")
-            .setCharacteristic(this.Characteristic.ServiceLabelIndex, 1);
-
-        // Configure the programmable switch output state characteristic for mode selection
-        this.ambilightSwitch.getCharacteristic(this.Characteristic.ProgrammableSwitchOutputState)
-            .setProps({
-                minValue: 0,
-                maxValue: this.ambilightModes.length - 1,
-                validValues: this.ambilightModes.map((_, idx) => idx)
-            })
-            .onGet(() => {
-                // Return current ambilight mode index (defaulting to 0)
-                return 0;
-            })
-            .onSet(async (value) => {
-                if (value >= 0 && value < this.ambilightModes.length) {
-                    const mode = this.ambilightModes[value];
-                    await this.setAmbilightMode(mode);
-                }
-            });
-
-        this.services.addLinkedService(this.ambilightSwitch);
-    }
-
-    configureAccessoryInformation() {
-        // Configure AccessoryInformation service (don't create new one to avoid UUID collision)
-        // This will be available for external configuration via index.js
-        // The actual service is created automatically by Homebridge/HAP-NodeJS
-        const system = this.getPowerState()
-            const serialNumber = system.name;
-            const TVversion = system.nettvversion;
-            const language = system.menulanguage;
-            const country = system.country;
-
-        this.accessoryInformation = {
-            name: this.config.name,
-            manufacturer: 'Philips',
-            model: this.config.model_year,
-            serialNumber: serialNumber | 'TV-' + this.config.name,
-            firmwareRevision: require('./package.json').version
-        };
-    }
-
-    getAccessoryInformation() {
-        return this.accessoryInformation;
-    }
 }
 
 module.exports = PhilipsTV;
