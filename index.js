@@ -21,7 +21,7 @@ class PhilipsTvAccessory {
         this.volume = 0;
 
         this.inputSources = [];
-        this.ambilightModes = ["FOLLOW_VIDEO", "FOLLOW_AUDIO", "Lounge_light"];
+        this.ambilightModes = ["FOLLOW VIDEO", "FOLLOW AUDIO", "Lounge light"];
         this.activeAmbilightMode = 0;
         this.PhilipsTV = new PhilipsTV(config);
 
@@ -35,7 +35,7 @@ class PhilipsTvAccessory {
         this.tvAccessory = new this.api.platformAccessory(this.config.name, uuid, Categories.TELEVISION);
         this.tvAccessory.context.isexternal = true;
 
-        this.tvService = new Service.Television(this.config.name);
+        this.tvService = new Service.Television((this.config.name), "Info", "subtype2");
         this.tvService.setCharacteristic(Characteristic.ConfiguredName, this.config.name);
         this.tvService.setCharacteristic(Characteristic.SleepDiscoveryMode, Characteristic.SleepDiscoveryMode.ALWAYS_DISCOVERABLE);
 
@@ -46,7 +46,7 @@ class PhilipsTvAccessory {
         this.tvService.getCharacteristic(Characteristic.RemoteKey)
             .onSet((v) => this.PhilipsTV.sendRemoteKey(v));
 
-        this.tvSpeaker = new Service.TelevisionSpeaker(this.config.name + " Speaker");
+        this.tvSpeaker = new Service.TelevisionSpeaker((this.config.name + " Speaker"), "Info", "subtype3");
         this.tvSpeaker.setCharacteristic(Characteristic.VolumeControlType, Characteristic.VolumeControlType.ABSOLUTE);
         this.tvSpeaker.getCharacteristic(Characteristic.Volume)
             .onGet(() => this.PhilipsTV.getVolumeState())
@@ -63,13 +63,14 @@ class PhilipsTvAccessory {
         this.informationService = new Service.AccessoryInformation()
             .setCharacteristic(Characteristic.Name, this.config.name)
             .setCharacteristic(Characteristic.Manufacturer, 'Philips')
-            .setCharacteristic(Characteristic.Model, this.config.model_year)
+            .setCharacteristic(Characteristic.Model, 'Android TV')
             .setCharacteristic(Characteristic.SerialNumber, 'PhilipsTV-' + this.config.name)
             .setCharacteristic(Characteristic.FirmwareRevision, pkg.version);
 
-        this.tvAccessory.addService(this.informationService);
-        this.tvAccessory.addService(this.tvService);
-        this.tvAccessory.addService(this.tvSpeaker);
+        this.tvAccessory.addService(this.informationService(), "Info", "subtype1");
+        this.tvAccessory.addService(this.tvService(), "Info", "subtype2");
+        this.tvAccessory.addService(this.tvSpeaker(), "Info", "subtype3");
+        //this.tvAccessory.addService(this.tvSwitch(), "Info", "subtype4");
 
         this.api.publishExternalAccessories(pluginName, [this.tvAccessory]);
     }
