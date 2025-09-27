@@ -37,9 +37,6 @@ class PhilipsTV {
             }
         });
 
-        // HomeKit setup properties
-        this.ambilightModes = ["FOLLOW_VIDEO", "FOLLOW_AUDIO", "Lounge_light"];
-        this.services = [];
     }
 
 
