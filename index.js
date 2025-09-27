@@ -108,7 +108,7 @@ class PhilipsTvAccessory {
 
         this.ambilightModes.forEach((mode, idx) => {
             const id = baseId + idx;
-            const inputSource = new Service.InputSource(mode, "Ambilight " + mode);
+            const inputSource = new Service.StatefulProgrammableSwitch(mode, "Ambilight " + mode);
             inputSource
                 .setCharacteristic(Characteristic.Identifier, id)
                 .setCharacteristic(Characteristic.ConfiguredName, "Ambilight " + mode)
@@ -116,8 +116,8 @@ class PhilipsTvAccessory {
                 .setCharacteristic(Characteristic.InputSourceType, Characteristic.InputSourceType.HDMI)
                 .setCharacteristic(Characteristic.CurrentVisibilityState, Characteristic.CurrentVisibilityState.SHOWN);
 
-            this.tvAccessory.addService(inputSource);
-            this.tvService.addLinkedService(inputSource);
+            this.tvAccessory.addService((inputSource), "AmbiLight", "subtype4");
+            this.tvService.addLinkedService((inputSource), "AmbiLight", "subtype4");
         });
     }
     getServices() {
