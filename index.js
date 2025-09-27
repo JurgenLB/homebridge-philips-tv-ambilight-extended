@@ -1,6 +1,6 @@
 "use strict";
 const pkg = require("./package.json");
-const PhilipsTV = new PhilipsTV(config);
+const PhilipsTV = require("./PhilipsTV");
 
 let Service, Characteristic, Categories;
 
