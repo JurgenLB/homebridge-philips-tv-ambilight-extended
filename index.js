@@ -63,7 +63,7 @@ class PhilipsTvAccessory {
         this.informationService = new Service.AccessoryInformation()
             .setCharacteristic(Characteristic.Name, this.config.name)
             .setCharacteristic(Characteristic.Manufacturer, 'Philips')
-            .setCharacteristic(Characteristic.Model, 'Android TV')
+            .setCharacteristic(Characteristic.Model, this.config.model_year)
             .setCharacteristic(Characteristic.SerialNumber, 'PhilipsTV-' + this.config.name)
             .setCharacteristic(Characteristic.FirmwareRevision, pkg.version);
 
