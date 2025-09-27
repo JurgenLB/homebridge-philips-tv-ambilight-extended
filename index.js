@@ -63,14 +63,14 @@ class PhilipsTvAccessory {
         this.informationService = new Service.AccessoryInformation()
             .setCharacteristic(Characteristic.Name, this.config.name)
             .setCharacteristic(Characteristic.Manufacturer, 'Philips')
-            .setCharacteristic(Characteristic.Model, 'Android TV')
+            .setCharacteristic(Characteristic.Model, this.config.model_year)
             .setCharacteristic(Characteristic.SerialNumber, 'PhilipsTV-' + this.config.name)
             .setCharacteristic(Characteristic.FirmwareRevision, pkg.version);
 
-        this.tvAccessory.addService(this.informationService(), "Info", "subtype1");
-        this.tvAccessory.addService(this.tvService(), "Info", "subtype2");
-        this.tvAccessory.addService(this.tvSpeaker(), "Info", "subtype3");
-        //this.tvAccessory.addService(this.tvSwitch(), "Info", "subtype4");
+        this.tvAccessory.addService(this.informationService, "Info", "subtype1");
+        this.tvAccessory.addService(this.tvService(), "Service", "subtype2");
+        this.tvAccessory.addService(this.tvSpeaker(), "Speaker", "subtype3");
+        //this.tvAccessory.addService(this.tvSwitch(), "Switch", "subtype4");
 
         this.api.publishExternalAccessories(pluginName, [this.tvAccessory]);
     }
