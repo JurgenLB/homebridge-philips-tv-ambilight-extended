@@ -96,12 +96,19 @@ class PhilipsTV {
     }
 
     async getVolumeState() {
+        let result = 50; // default
         try {
             const vol = await this.api("audio/volume");
-            return Math.round((vol.current / vol.max) * 100);
-        } catch {
-            return 50;
+            if (vol && typeof vol.current === "number" && typeof vol.max === "number" && vol.max > 0) {
+                result = Math.round((vol.current / vol.max) * 100);
+            } else {
+                console.warn("[PhilipsTV WARN] Invalid volume data from TV, returning default 50. Data:", vol);
+            }
+        } catch (e) {
+            console.warn("[PhilipsTV WARN] getVolumeState error, returning default 50:", e);
         }
+        console.log("[PhilipsTV DEBUG] getVolumeState returning:", result);
+        return result;
     }
 
     async setVolumeState(value) {
@@ -111,12 +118,19 @@ class PhilipsTV {
     }
 
     async getMuteState() {
+        let result = false; // default
         try {
             const vol = await this.api("audio/volume");
-            return vol.muted;
-        } catch {
-            return false;
+            if (vol && typeof vol.muted === "boolean") {
+                result = vol.muted;
+            } else {
+                console.warn("[PhilipsTV WARN] Invalid mute data from TV, returning false. Data:", vol);
+            }
+        } catch (e) {
+            console.warn("[PhilipsTV WARN] getMuteState error, returning false:", e);
         }
+        console.log("[PhilipsTV DEBUG] getMuteState returning:", result);
+        return result;
     }
 
     async setMuteState(value) {
