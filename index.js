@@ -21,21 +21,17 @@ class PhilipsTvAccessory {
         this.volume = 0;
 
         this.inputSources = [];
-        this.ambilightModes = ["FOLLOW VIDEO", "FOLLOW AUDIO", "Lounge light"];
+        this.ambilightModes = ["FOLLOW VIDEO", "FOLLOW AUDIO", "Lounge Light"];
         this.activeAmbilightMode = 0;
         this.PhilipsTV = new PhilipsTV(config);
 
-        this.api.on("didFinishLaunching", () => {
-            this.publishExternal();
-        });
-    }
+        this.services = [];
 
-    publishExternal() {
         const uuid = this.api.hap.uuid.generate(this.config.name);
         this.tvAccessory = new this.api.platformAccessory(this.config.name, uuid, Categories.TELEVISION);
         this.tvAccessory.context.isexternal = true;
 
-        this.tvService = new Service.Television((this.config.name), "Info", "subtype2");
+        this.tvService = new Service.Television(this.config.name);
         this.tvService.setCharacteristic(Characteristic.ConfiguredName, this.config.name);
         this.tvService.setCharacteristic(Characteristic.SleepDiscoveryMode, Characteristic.SleepDiscoveryMode.ALWAYS_DISCOVERABLE);
 
@@ -46,7 +42,7 @@ class PhilipsTvAccessory {
         this.tvService.getCharacteristic(Characteristic.RemoteKey)
             .onSet((v) => this.PhilipsTV.sendRemoteKey(v));
 
-        this.tvSpeaker = new Service.TelevisionSpeaker((this.config.name + " Speaker"), "Info", "subtype3");
+        this.tvSpeaker = new Service.TelevisionSpeaker(this.config.name + " Speaker");
         this.tvSpeaker.setCharacteristic(Characteristic.VolumeControlType, Characteristic.VolumeControlType.ABSOLUTE);
         this.tvSpeaker.getCharacteristic(Characteristic.Volume)
             .onGet(() => this.PhilipsTV.getVolumeState())
@@ -59,20 +55,31 @@ class PhilipsTvAccessory {
 
         this.setupInputSources();
         this.setupAmbilightInputs();
+        //const system = this.getSystemState()
+        const serialNumber = 'PhilipsTV-' + this.config.name; //system.name;
+        //const TVversion = system.nettvversion;
+        //const language = system.menulanguage;
+        //const country = system.country;
 
         this.informationService = new Service.AccessoryInformation()
             .setCharacteristic(Characteristic.Name, this.config.name)
             .setCharacteristic(Characteristic.Manufacturer, 'Philips')
             .setCharacteristic(Characteristic.Model, this.config.model_year)
-            .setCharacteristic(Characteristic.SerialNumber, 'PhilipsTV-' + this.config.name)
+            .setCharacteristic(Characteristic.SerialNumber, serialNumber)
             .setCharacteristic(Characteristic.FirmwareRevision, pkg.version);
 
-        this.tvAccessory.addService(this.informationService, "Info", "subtype1");
-        this.tvAccessory.addService(this.tvService(), "Service", "subtype2");
-        this.tvAccessory.addService(this.tvSpeaker(), "Speaker", "subtype3");
-        //this.tvAccessory.addService(this.tvSwitch(), "Switch", "subtype4");
+        //this.tvAccessory.addService(this.informationService); //This give error double UUID
+        this.services.push(this.informationService);
 
-        this.api.publishExternalAccessories(pluginName, [this.tvAccessory]);
+        this.tvAccessory.addService(this.tvService);
+        this.services.push(this.tvService);
+
+        this.tvAccessory.addService(this.tvSpeaker);
+        this.services.push(this.tvSpeaker);
+
+        this.api.on("didFinishLaunching", () => {
+            this.api.publishExternalAccessories(pluginName, [this.tvAccessory]);
+        });
     }
 
     setupInputSources() {
@@ -83,18 +90,24 @@ class PhilipsTvAccessory {
             .onSet(() => {});
 
         this.config.inputs.forEach((input, index) => {
-            const inputSource = new Service.InputSource(input.name, input.name);
+            // Sanitize input name for HomeKit
+            const niceInputName = input.name
+                .replace(/_/g, " ")
+                .replace(/\b\w/g, c => c.toUpperCase());
+
+            const inputSource = new Service.InputSource(input.name, niceInputName, `input-${index}`);
             inputSource
                 .setCharacteristic(Characteristic.Identifier, index)
-                .setCharacteristic(Characteristic.ConfiguredName, input.name)
+                .setCharacteristic(Characteristic.ConfiguredName, niceInputName)
                 .setCharacteristic(Characteristic.IsConfigured, Characteristic.IsConfigured.CONFIGURED)
                 .setCharacteristic(Characteristic.InputSourceType, Characteristic.InputSourceType.APPLICATION)
                 .setCharacteristic(Characteristic.CurrentVisibilityState, Characteristic.CurrentVisibilityState.SHOWN);
 
             this.tvAccessory.addService(inputSource);
+            this.services.push(inputSource);
             this.tvService.addLinkedService(inputSource);
         });
-        }
+    }
 
     setupAmbilightInputs() {
         const baseId = (this.config.inputs?.length || 0);
@@ -108,18 +121,23 @@ class PhilipsTvAccessory {
 
         this.ambilightModes.forEach((mode, idx) => {
             const id = baseId + idx;
-            const inputSource = new Service.StatefulProgrammableSwitch(mode, "Ambilight " + mode);
-            inputSource
+            // Sanitize mode name for HomeKit
+            const niceMode = mode.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+
+            const ambiSwitch = new Service.InputSource(mode, niceMode, `Ambilight-${idx}`);
+            ambiSwitch
                 .setCharacteristic(Characteristic.Identifier, id)
-                .setCharacteristic(Characteristic.ConfiguredName, "Ambilight " + mode)
+                .setCharacteristic(Characteristic.ConfiguredName, "Ambilight " + niceMode)
                 .setCharacteristic(Characteristic.IsConfigured, Characteristic.IsConfigured.CONFIGURED)
                 .setCharacteristic(Characteristic.InputSourceType, Characteristic.InputSourceType.HDMI)
                 .setCharacteristic(Characteristic.CurrentVisibilityState, Characteristic.CurrentVisibilityState.SHOWN);
 
-            this.tvAccessory.addService((inputSource), "AmbiLight", "subtype4");
-            this.tvService.addLinkedService((inputSource), "AmbiLight", "subtype4");
+            this.tvAccessory.addService(ambiSwitch);
+            this.services.push(ambiSwitch);
+            this.tvService.addLinkedService(ambiSwitch);
         });
     }
+
     getServices() {
         return this.services;
     }
