@@ -124,13 +124,28 @@ class PhilipsTvAccessory {
             // Sanitize mode name for HomeKit
             const niceMode = mode.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
 
-            const ambiSwitch = new Service.InputSource(mode, niceMode, `Ambilight-${idx}`);
+            const ambiSwitch = new Service.StatefulProgrammableSwitch("Ambilight Control", "ambilight-switch", `Ambilight-${idx}`);
             ambiSwitch
                 .setCharacteristic(Characteristic.Identifier, id)
-                .setCharacteristic(Characteristic.ConfiguredName, "Ambilight " + niceMode)
-                .setCharacteristic(Characteristic.IsConfigured, Characteristic.IsConfigured.CONFIGURED)
-                .setCharacteristic(Characteristic.InputSourceType, Characteristic.InputSourceType.HDMI)
-                .setCharacteristic(Characteristic.CurrentVisibilityState, Characteristic.CurrentVisibilityState.SHOWN);
+                .setCharacteristic(Characteristic.Name, "Ambilight Control")
+                .setCharacteristic(Characteristic.ServiceLabelIndex, 1);
+
+            ambiSwitch.getCharacteristic(this.Characteristic.ProgrammableSwitchOutputState)
+            .setProps({
+                minValue: 0,
+                maxValue: this.ambilightModes.length - 1,
+                validValues: this.ambilightModes.map((_, idx) => idx)
+            })
+            .onGet(() => {
+                // Return current ambilight mode index (defaulting to 0)
+                return 0;
+            })
+            .onSet(async (value) => {
+                if (value >= 0 && value < this.ambilightModes.length) {
+                    const mode = this.ambilightModes[value];
+                    await this.setAmbilightMode(mode);
+                }
+            });
 
             this.tvAccessory.addService(ambiSwitch);
             this.services.push(ambiSwitch);
