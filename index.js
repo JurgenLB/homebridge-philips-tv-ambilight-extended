@@ -124,13 +124,17 @@ class PhilipsTvAccessory {
             // Sanitize mode name for HomeKit
             const niceMode = mode.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
 
-            const ambiSwitch = new Service.StatefulProgrammableSwitch("Ambilight Control", "ambilight-switch", `Ambilight-${idx}`);
+            const ambiSwitch = new Service.StatefulProgrammableSwitch("Ambilight Control", "ambilight-switch-${idx}");
             ambiSwitch
                 .setCharacteristic(Characteristic.Identifier, id)
                 .setCharacteristic(Characteristic.Name, "Ambilight Control")
-                .setCharacteristic(Characteristic.ServiceLabelIndex, 1);
+                .setCharacteristic(Characteristic.ServiceLabelIndex, 1)
+                .setCharacteristic(Characteristic.IsConfigured, Characteristic.IsConfigured.CONFIGURED)
+                .setCharacteristic(Characteristic.InputSourceType, Characteristic.InputSourceType.HDMI)
+                .setCharacteristic(Characteristic.CurrentVisibilityState, Characteristic.CurrentVisibilityState.SHOWN);
 
-            ambiSwitch.getCharacteristic(this.Characteristic.ProgrammableSwitchOutputState)
+
+            ambiSwitch.getCharacteristic(Characteristic.ProgrammableSwitchOutputState)
             .setProps({
                 minValue: 0,
                 maxValue: this.ambilightModes.length - 1,
