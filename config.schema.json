@@ -1,102 +1,152 @@
 {
-    "title": "Homebridge PhilipsTV Accessory Configuration",
-    "pluginAlias": "PhilipsTV",
-    "pluginType": "accessory",
+    "title": "Homebridge Philips Android TV Accessory Configuration",
+    "pluginAlias": "PhilipsAndroidTV",
+    "pluginType": "platform",
     "singular": false,
-    "headerDisplay": "Homebridge plugin for PhilipsTV.",
-    "footerDisplay": "For additional information visit [Plugin Homepage](https://github.com/m2ert/homebridge)",
+    "headerDisplay": "Enhanced Homebridge platform plugin for Philips Android TV with proper TV icon, Ambilight control, and extended features.",
+    "footerDisplay": "For additional information visit [Plugin Homepage](https://github.com/m2ert/homebridge-philips-tv-ambilight-extended)",
     "schema": {
         "type": "object",
         "properties": {
-            "name": {
-                "title": "Name",
-                "type": "string",
-                "default": "Name of the Accessory"
-            },
-            "ip_address": {
-                "title": "IP address V4",
-                "type": "string",
-                "format": "ipv4",
-                "description": "IP address of the Television"
-            },
-            "poll_status_interval": {
-                "title": "Poll interval",
-                "type": "integer",
-                "minimum": 5,
-                "default": 30,
-                "description": "Polling interval of the TV"
-            },
-            "model_year": {
-                "title": "Model Year",
-                "type": "integer",
-                "default": 2016,
-                "description": "Model year of the TV"
-            },
-            "has_ambilight": {
-                "title": "Ambilight",
+            "debug": {
+                "title": "Debug Mode",
                 "type": "boolean",
                 "default": false,
-                "description": "Whether the TV has Ambilight feature exposed to Homebridge"
+                "description": "Enable debug logging"
             },
-            "wol_url": {
-                "title": "WOL url",
-                "type": "string",
-                "description": "Wake On LAN for TV"
+            "configVersion": {
+                "title": "Config Version",
+                "type": "integer",
+                "default": 1,
+                "description": "Configuration version for future compatibility"
             },
-            "username": {
-                "title": "User Name",
-                "type": "string",
-                "description": "API username for TV"
-            },
-            "password": {
-                "title": "Password",
-                "type": "string",
-                "description": "API password for TV"
-            },
-            "inputs": {
+            "tvs": {
                 "type": "array",
+                "title": "TVs",
+                "description": "List of Philips Android TVs to control",
                 "items": {
                     "type": "object",
                     "properties": {
-                        "name": { "type": "string", "description": "Name of the input" },
-                        "type": {
+                        "name": {
+                            "title": "TV Name",
                             "type": "string",
-                            "enum": ["channel", "launch"],
-                            "description": "Type of input"
+                            "default": "Philips TV",
+                            "description": "Display name for your TV"
                         },
-                        "channel": {
-                            "type": "number",
-                            "description": "Number of the channel - Only use this when Channel is selected"
+                        "ip": {
+                            "title": "IP Address",
+                            "type": "string",
+                            "format": "ipv4",
+                            "description": "IP address of the TV"
                         },
-                        "launch": {
+                        "apiUser": {
+                            "title": "API Username",
+                            "type": "string",
+                            "description": "API username from TV pairing"
+                        },
+                        "apiPass": {
+                            "title": "API Password",
+                            "type": "string",
+                            "description": "API password from TV pairing"
+                        },
+                        "apiVersion": {
+                            "title": "API Version",
+                            "type": "integer",
+                            "default": 6,
+                            "description": "Philips TV API version"
+                        },
+                        "mac": {
+                            "title": "MAC Address",
+                            "type": "string",
+                            "description": "MAC address for Wake on LAN (optional)"
+                        },
+                        "wakeOnLanRequests": {
+                            "title": "WOL Requests",
+                            "type": "integer",
+                            "default": 3,
+                            "description": "Number of Wake on LAN requests to send"
+                        },
+                        "wakeOnLanTimeout": {
+                            "title": "WOL Timeout",
+                            "type": "integer",
+                            "default": 1000,
+                            "description": "Timeout between WOL requests in milliseconds"
+                        },
+                        "wakeUntilAPIReadyCounter": {
+                            "title": "Wake Until API Ready Counter",
+                            "type": "integer",
+                            "default": 100,
+                            "description": "Number of tries before giving up connecting to TV"
+                        },
+                        "alternativePlayPause": {
+                            "title": "Alternative Play/Pause",
+                            "type": "boolean",
+                            "default": false,
+                            "description": "Send Play or Pause alternating instead of PlayPause"
+                        },
+                        "dedicatedMuteSwitch": {
+                            "title": "Dedicated Mute Switch",
+                            "type": "boolean",
+                            "default": false,
+                            "description": "Create separate switch for mute control"
+                        },
+                        "dedicatedVolumeLightbulb": {
+                            "title": "Dedicated Volume Lightbulb",
+                            "type": "boolean",
+                            "default": false,
+                            "description": "Create separate lightbulb for volume control"
+                        },
+                        "has_ambilight": {
+                            "title": "Has Ambilight",
+                            "type": "boolean",
+                            "default": true,
+                            "description": "Enable ambilight control"
+                        },
+                        "apps": {
+                            "type": "array",
+                            "title": "Apps",
+                            "description": "List of apps to show as input sources",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "channels": {
                             "type": "object",
-                            "description": "Launch Application configuration - Do NOT fill this when Channel is selected",
+                            "title": "Channels Configuration",
                             "properties": {
-                                "intent": {
-                                    "type": "object",
-                                    "properties": {
-                                        "component": {
-                                            "type": "object",
-                                            "properties": {
-                                                "packageName": { "type": "string" },
-                                                "className": { "type": "string" }
-                                            }
-                                        },
-                                        "action": { "type": "string" }
+                                "useFavorites": {
+                                    "title": "Use Favorites",
+                                    "type": "boolean",
+                                    "default": false,
+                                    "description": "Use favorite channels list"
+                                },
+                                "favoriteListId": {
+                                    "title": "Favorite List ID",
+                                    "type": "string",
+                                    "default": "1",
+                                    "description": "ID of favorite list to use"
+                                },
+                                "includeAll": {
+                                    "title": "Include All Channels",
+                                    "type": "boolean",
+                                    "default": false,
+                                    "description": "Include all available channels"
+                                },
+                                "channels": {
+                                    "type": "array",
+                                    "title": "Manual Channel List",
+                                    "description": "Manual list of channel names",
+                                    "items": {
+                                        "type": "string"
                                     }
                                 }
                             }
                         }
                     },
-                    "required": ["name", "type"]
+                    "required": ["name", "ip", "apiUser", "apiPass"]
                 }
             }
         },
-        "required": [
-            "name",
-            "ip_address",
-            "poll_status_interval",
-            "model_year"
-        ]
+        "required": ["tvs"]
     }
 }
