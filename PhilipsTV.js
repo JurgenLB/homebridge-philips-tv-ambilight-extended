@@ -27,7 +27,7 @@ class PhilipsTV {
 
         // Configure axios with default settings
         this.httpClient = axios.create({
-            timeout: 3000,
+            timeout: 5000, // Reduced from 10000 to 5000ms for faster response
             httpsAgent: this.api_version > 5 ? new (require('https').Agent)({
                 rejectUnauthorized: false
             }) : undefined,
@@ -81,9 +81,25 @@ class PhilipsTV {
     async setPowerState(value) {
         if (value && this.wolURL?.toUpperCase().startsWith("WOL")) {
             const mac = this.wolURL.replace(/^WOL[:\/]*/i, "");
-            wol.wake(mac, () => {});
+            return new Promise((resolve) => {
+                wol.wake(mac, (error) => {
+                    if (error) {
+                        console.warn("[PhilipsTV WARN] WOL error:", error.message);
+                    }
+                    // Wait a bit for TV to wake up before sending power command
+                    setTimeout(async () => {
+                        try {
+                            await this.api("powerstate", { powerstate: "On" });
+                        } catch (e) {
+                            console.warn("[PhilipsTV WARN] Power on after WOL failed:", e.message);
+                        }
+                        resolve();
+                    }, 2000);
+                });
+            });
+        } else {
+            await this.api("powerstate", { powerstate: value ? "On" : "Standby" });
         }
-        await this.api("powerstate", { powerstate: value ? "On" : "Standby" });
     }
 
     async sendRemoteKey(key) {
@@ -99,15 +115,14 @@ class PhilipsTV {
         let result = 50; // default
         try {
             const vol = await this.api("audio/volume");
-            if (vol && typeof vol.current === "number" && typeof vol.max === "number" && vol.max > 0) {
+            if (vol && vol.current !== undefined && vol.max !== undefined && vol.max > 0) {
                 result = Math.round((vol.current / vol.max) * 100);
             } else {
                 console.warn("[PhilipsTV WARN] Invalid volume data from TV, returning default 50. Data:", vol);
             }
         } catch (e) {
-            console.warn("[PhilipsTV WARN] getVolumeState error, returning default 50:", e);
+            console.warn("[PhilipsTV WARN] getVolumeState error, returning default 50:", e.message);
         }
-        console.log("[PhilipsTV DEBUG] getVolumeState returning:", result);
         return result;
     }
 
@@ -121,30 +136,109 @@ class PhilipsTV {
         let result = false; // default
         try {
             const vol = await this.api("audio/volume");
-            if (vol && typeof vol.muted === "boolean") {
+            if (vol && vol.muted !== undefined) {
                 result = vol.muted;
             } else {
                 console.warn("[PhilipsTV WARN] Invalid mute data from TV, returning false. Data:", vol);
             }
         } catch (e) {
-            console.warn("[PhilipsTV WARN] getMuteState error, returning false:", e);
+            console.warn("[PhilipsTV WARN] getMuteState error, returning false:", e.message);
         }
-        console.log("[PhilipsTV DEBUG] getMuteState returning:", result);
         return result;
     }
 
-    async setMuteState(value) {
+    async setMuteState(value) {        
         const vol = await this.api("audio/volume");
         vol.muted = value;
         await this.api("audio/volume", vol);
     }
 
     async setAmbilightMode(mode) {
-        await this.api("ambilight/currentconfiguration", {
-            styleName: mode,
-            isExpert: false,
-            menuSetting: "NATURAL"
-        });
+        try {
+            // First check if ambilight is available
+            const power = await this.api("ambilight/power");
+            if (!power || power.power !== "On") {
+                // Turn on ambilight first
+                await this.api("ambilight/power", { power: "On" });
+            }
+
+            // Map mode names to API values
+            const modeMap = {
+                "Follow Video": "FOLLOW_VIDEO",
+                "Follow Audio": "FOLLOW_AUDIO", 
+                "Lounge Light": "LOUNGE_LIGHT",
+                "Manual": "MANUAL"
+            };
+
+            const apiMode = modeMap[mode] || "FOLLOW_VIDEO";
+
+            // Set the mode
+            await this.api("ambilight/mode", {
+                current: apiMode
+            });
+        } catch (error) {
+            console.warn("[PhilipsTV WARN] setAmbilightMode error:", error.message);
+        }
+    }
+
+    async launchApp(packageName, className) {
+        try {
+            if (typeof packageName === 'object') {
+                // If packageName is actually an app config object
+                const intent = {
+                    intent: {
+                        component: {
+                            packageName: packageName.packageName || packageName,
+                            className: packageName.className || className
+                        },
+                        action: "android.intent.action.MAIN"
+                    }
+                };
+                await this.api("activities/launch", intent);
+            } else {
+                // Simple package name
+                const intent = {
+                    intent: {
+                        component: {
+                            packageName: packageName,
+                            className: className || packageName + ".MainActivity"
+                        },
+                        action: "android.intent.action.MAIN"
+                    }
+                };
+                await this.api("activities/launch", intent);
+            }
+        } catch (error) {
+            console.warn("[PhilipsTV WARN] launchApp error:", error.message);
+        }
+    }
+
+    async setChannel(channel) {
+        try {
+            await this.api("activities/tv", {
+                channel: {
+                    ccid: channel,
+                    preset: channel.toString(),
+                    name: ""
+                },
+                channelList: {
+                    id: "allter",
+                    version: "30"
+                }
+            });
+        } catch (error) {
+            console.warn("[PhilipsTV WARN] setChannel error:", error.message);
+        }
+    }
+
+    async getCurrentActivity() {
+        try {
+            const res = await this.api("activities/current");
+            return res;
+        } catch (error) {
+            console.warn("[PhilipsTV WARN] getCurrentActivity error:", error.message);
+            return null;
+        }
     }
 
     getServices() {
