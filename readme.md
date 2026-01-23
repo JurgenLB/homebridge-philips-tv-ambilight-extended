@@ -36,122 +36,122 @@ cd philips_android_tv
 python ./philips.py --host YOUR_TV_IP pair
 ```
 
-The pairing process will give you `username` and `password` credentials needed for configuration.
+The pairing process will give you `apiUser` and `apiPass` credentials needed for configuration.
 
 ## Configuration
 
-Add this to your Homebridge `config.json`:
+Add to your Homebridge `config.json`:
 
 ```json
 {
   "accessories": [
     {
-      "accessory": "PhilipsTV",
-      "name": "Living Room TV",
-      "ip_address": "192.168.1.100",
-      "poll_status_interval": 30,
-      "model_year": 2016,
-      "has_ambilight": true,
-      "username": "your_api_username",
-      "password": "your_api_password",
-      "wol_url": "wol://aa:bb:cc:dd:ee:ff",
-      "inputs": [
-        { "name": "TV Mode" },
-        { 
-          "name": "Netflix",
-          "launch": {
-            "intent": {
-              "component": {
-                "packageName": "com.netflix.ninja",
-                "className": "com.netflix.ninja.MainActivity"
-              },
-              "action": "android.intent.action.MAIN"
-            }
+      "accessory": "PhilipsAndroidTV",
+      "debug": false,
+      "configVersion": 1,
+      "tvs": [
+        {
+        "name": "Living Room TV",
+        "ip": "192.168.1.100",
+        "apiUser": "your_api_username",
+        "apiPass": "your_api_password",
+        "apiVersion": 6,
+        "mac": "AA:BB:CC:DD:EE:FF",
+        "wakeOnLanRequests": 3,
+          "wakeOnLanTimeout": 1000,
+          "wakeUntilAPIReadyCounter": 100,
+          "alternativePlayPause": false,
+          "dedicatedMuteSwitch": false,
+          "dedicatedVolumeLightbulb": false,
+          "has_ambilight": true,
+          "apps": [
+            "Netflix",
+            "YouTube",
+            "Amazon Prime",
+            "Disney+"
+          ],
+          "channels": {
+            "useFavorites": false,
+            "favoriteListId": "1",
+            "includeAll": false,
+            "channels": [
+              "BBC One",
+              "CNN",
+              "National Geographic"
+            ]
           }
-        },
-        { 
-          "name": "YouTube",
-          "launch": {
-            "intent": {
-              "component": {
-                "packageName": "com.google.android.youtube.tv",
-                "className": "com.google.android.apps.youtube.tv.activity.ShellActivity"
-              },
-              "action": "android.intent.action.MAIN"
-            }
-          }
-        },
-        { "name": "CNN", "channel": 501 },
-        { "name": "BBC", "channel": 502 },
-        { "name": "National Geographic", "channel": 503 }
+        }
       ]
     }
   ]
 }
 ```
 
+
+
+
+
 ## Configuration Options
+
+### Platform Options
 
 | Option | Type | Required | Description |
 |--------|------|----------|-------------|
-| `accessory` | string | ✅ | Must be "PhilipsTV" |
+| `platform` | string | ✅ | Must be "PhilipsAndroidTV" |
+| `debug` | boolean | ❌ | Enable debug logging (default: false) |
+| `configVersion` | number | ❌ | Config version for compatibility (default: 1) |
+| `tvs` | array | ✅ | Array of TV configurations |
+
+### TV Options
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
 | `name` | string | ✅ | Display name for your TV |
-| `ip_address` | string | ✅ | TV's IP address |
-| `username` | string | ✅ | API username from pairing |
-| `password` | string | ✅ | API password from pairing |
-| `poll_status_interval` | number | ❌ | Status update interval in seconds (default: 30) |
-| `model_year` | number | ❌ | TV model year (default: 2016) |
-| `has_ambilight` | boolean | ❌ | Enable ambilight control (default: false) |
-| `wol_url` | string | ❌ | Wake on LAN MAC address (format: wol://aa:bb:cc:dd:ee:ff) |
-| `inputs` | array | ❌ | Custom input sources (apps and channels) |
+| `ip` | string | ✅ | TV's IP address |
+| `apiUser` | string | ✅ | API username from pairing |
+| `apiPass` | string | ✅ | API password from pairing |
+| `apiVersion` | number | ❌ | API version (default: 6) |
+| `mac` | string | ❌ | MAC address for Wake on LAN |
+| `wakeOnLanRequests` | number | ❌ | Number of WOL requests (default: 3) |
+| `wakeOnLanTimeout` | number | ❌ | Timeout between WOL requests in ms (default: 1000) |
+| `wakeUntilAPIReadyCounter` | number | ❌ | Connection retry attempts (default: 100) |
+| `alternativePlayPause` | boolean | ❌ | Use alternative play/pause (default: false) |
+| `dedicatedMuteSwitch` | boolean | ❌ | Create separate mute switch (default: false) |
+| `dedicatedVolumeLightbulb` | boolean | ❌ | Create separate volume lightbulb (default: false) |
+| `has_ambilight` | boolean | ❌ | Enable ambilight control (default: true) |
+| `apps` | array | ❌ | List of app names to show as inputs |
+| `channels` | object | ❌ | Channel configuration |
 
-## Input Configuration
+### Channel Configuration
 
-### TV Channels
-```json
-{ "name": "BBC One", "channel": 101 }
-```
+| Option | Type | Description |
+|--------|------|-------------|
+| `useFavorites` | boolean | Use TV's favorite channels list |
+| `favoriteListId` | string | ID of favorite list to use |
+| `includeAll` | boolean | Include all available channels |
+| `channels` | array | Manual list of channel names |
 
-### Android TV Apps
-```json
-{ 
-  "name": "Netflix",
-  "launch": {
-    "intent": {
-      "component": {
-        "packageName": "com.netflix.ninja",
-        "className": "com.netflix.ninja.MainActivity"
-      },
-      "action": "android.intent.action.MAIN"
-    }
-  }
-}
-```
+## Supported Apps
 
-### Popular App Package Names
-- **Netflix**: `com.netflix.ninja`
-- **YouTube**: `com.google.android.youtube.tv`
-- **Amazon Prime**: `com.amazon.avod.thirdpartyclient`
-- **Disney+**: `com.disney.disneyplus`
-- **Spotify**: `com.spotify.tv.android`
-- **Plex**: `com.plexapp.android`
-- **Kodi**: `org.xbmc.kodi`
-- **VLC**: `org.videolan.vlc`
+The plugin maps these app names to their package names:
+
+- Netflix → `com.netflix.ninja`
+- YouTube → `com.google.android.youtube.tv`
+- Amazon Prime → `com.amazon.avod.thirdpartyclient`
+- Disney+ → `com.disney.disneyplus`
+- Spotify → `com.spotify.tv.android`
+- Plex → `com.plexapp.android`
+- Kodi → `org.xbmc.kodi`
+- VLC → `org.videolan.vlc`
 
 ## HomeKit Interface
 
-This plugin creates a clean TV interface with:
+This plugin creates a TV accessory with:
 
-### Main TV Accessory
-- **TV Icon** - Proper television icon in HomeKit
-- **Power Control** - Turn TV on/off
-- **Volume Control** - Native TV speaker volume
-- **Input Selection** - Switch between configured inputs
-- **Remote Control** - Navigation and media controls
-
-### Additional Accessories (if enabled)
-- **Ambilight** - Separate lightbulb for ambilight control
-- **Volume Fan** - Alternative volume control (can be disabled)
+- TV icon and power control
+- Native TV speaker volume control
+- Input selection for apps, channels, and Ambilight modes
+- Remote control with navigation and media keys
 
 ## Remote Control Keys
 
@@ -166,34 +166,118 @@ This plugin creates a clean TV interface with:
 
 ## Wake on LAN
 
-To use Wake on LAN:
-1. Enable WOL in your TV's network settings
-2. Connect TV via Ethernet cable
-3. Find your TV's MAC address
-4. Add `wol_url` to configuration: `"wol_url": "wol://aa:bb:cc:dd:ee:ff"`
+To enable Wake on LAN:
+1. Enable WOL in TV network settings
+2. Connect TV via Ethernet
+3. Add TV MAC address to `mac` field in configuration
+
+## Multiple TVs
+
+Control multiple TVs by adding them to the `tvs` array:
+
+
+```json
+{
+  "platforms": [
+    {
+      "platform": "PhilipsAndroidTV",
+      "tvs": [
+        {
+          "name": "Living Room TV",
+          "ip": "192.168.1.100",
+          "apiUser": "user1",
+          "apiPass": "pass1"
+        },
+        {
+          "name": "Bedroom TV", 
+          "ip": "192.168.1.101",
+          "apiUser": "user2",
+          "apiPass": "pass2"
+        }
+      ]
+    }
+  ]
+}
+```
 
 ## Troubleshooting
 
-### TV Not Responding
-- Check if TV is on the same network
-- Verify IP address is correct
-- Ensure API credentials are valid
-- Check if TV's API is enabled in settings
+**TV not responding:**
+- Verify TV is on same network and IP is correct
+- Check API credentials are valid
+- Restart TV if needed
+- Re-pair after TV software updates
 
-### Volume Control Issues
-- Make sure TV supports volume API
-- Check if external speakers are connected
-- Verify TV is not in mute mode
+**Volume control issues:**
+- Ensure TV supports volume API
+- Check for external speakers
+- Verify TV is not muted
 
-### Ambilight Not Working
-- Ensure TV has ambilight capability
-- Check if ambilight is enabled in TV settings
-- Verify `has_ambilight: true` in configuration
+**Ambilight not working:**
+- Confirm TV has Ambilight capability
+- Enable Ambilight in TV settings
+- Set `has_ambilight: true` in configuration
 
-### App Launch Failures
-- Verify app package names are correct
-- Check if apps are installed on TV
-- Ensure apps are compatible with intent launching
+**App launch failures:**
+- Verify app names match supported apps
+- Check apps are installed on TV
+- Ensure apps support intent launching
+
+## API Reference
+
+Uses Philips JointSpace API v6. For advanced usage:
+- [Philips TV API Documentation](https://github.com/eslavnov/pylips/wiki)
+- [JointSpace API Reference](http://jointspace.sourceforge.net/)
+
+## Compatibility
+
+- TV Models: Philips Android TV 2016+
+- API Version: JointSpace API v6
+- Homebridge: v1.0.0+
+- Node.js: v14+
+  
+## Changelog
+
+### v2.0.0
+- Converted from accessory to platform plugin
+- Multiple TV support
+- Improved stability and error handling
+- Better input source management
+- Fixed Wake on LAN implementation
+- Fixed Ambilight API endpoints
+- Enhanced volume and mute state handling
+
+## Migration from v1.x
+
+Update your configuration from accessory to platform format:
+
+**Old (v1.x):**
+```json
+{
+  "accessories": [{
+    "accessory": "PhilipsTV",
+    "name": "TV",
+    "ip_address": "192.168.1.100",
+    "username": "user",
+    "password": "pass"
+  }]
+}
+```
+
+**New (v2.x):**
+```json
+{
+  "platforms": [{
+    "platform": "PhilipsAndroidTV",
+    "tvs": [{
+      "name": "TV",
+      "ip": "192.168.1.100",
+      "apiUser": "user",
+      "apiPass": "pass"
+    }]
+  }]
+}
+```
 
 ## API Reference
 
@@ -201,28 +285,21 @@ This plugin uses the Philips JointSpace API v6. For advanced usage and additiona
 - [Philips TV API Documentation](https://github.com/eslavnov/pylips/wiki)
 - [JointSpace API Reference](http://jointspace.sourceforge.net/)
 
-## Compatibility
-
-- **TV Models**: Philips Android TV 2016+
-- **API Version**: JointSpace API v6
-- **Homebridge**: v1.0.0+
-- **Node.js**: v14+
-
 ## Support
 
 For issues and feature requests, please visit:
 [GitHub Issues](https://github.com/m2ert/homebridge-philips-tv-ambilight-extended/issues)
 
-## License
-
-ISC License
-
 ## Credits
 
-Based on the excellent work from:
+Based on work from:
 - [homebridge-philips-tv6](https://github.com/98oktay/homebridge-philips-tv6)
 - [homebridge-philips-android-tv](https://github.com/konradknitter/homebridge-philips-android-tv)
 - [pylips](https://github.com/eslavnov/pylips)
+
+## License
+
+Apache-2.0
 
 ---
 
